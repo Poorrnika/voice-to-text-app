@@ -98,12 +98,7 @@ axiosInstance.interceptors.response.use(
     return response;
   },
   async (error) => {
-    console.log("❌ RESPONSE ERROR:", JSON.stringify(error.response.data));
-    console.log("❌ RESPONSE ERROR DETAILS:", {
-      status: error.response?.status,
-      data: error.response?.data.detail,
-    });
-
+    console.log("❌ RESPONSE ERROR:", JSON.stringify(error.message));
     // Handle 401 – Token expired or unauthorized
     if (error.response?.status === 401) {
       console.log("🔒 Unauthorized (401) → attempting token refresh");

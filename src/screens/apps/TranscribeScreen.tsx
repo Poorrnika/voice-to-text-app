@@ -10,6 +10,9 @@ import {
   Modal,
   Pressable,
   TextInput,
+  KeyboardAvoidingView,
+  Keyboard,
+  TouchableWithoutFeedback,
 } from "react-native";
 import { Ionicons, Octicons } from "@expo/vector-icons";
 import * as DocumentPicker from "expo-document-picker";
@@ -159,7 +162,11 @@ export default function TranscribeScreen() {
           console.error("Error while transcribing in api", err);
           setTranscribedText(NO_TRANSCIBED_TEXT);
           setShowSnackbar(true);
-          setStatus("❌ Error while transcribing the uploaded file");
+          setStatus(
+            "❌ Error while transcribing the uploaded file" + err.message
+              ? ": " + err.message
+              : "",
+          );
           setLoading(false);
         });
     } catch (err) {
@@ -369,9 +376,7 @@ export default function TranscribeScreen() {
             <Text style={styles.title}>{APP_NAME}</Text>
           </View>
 
-          <ScrollView
-            style={styles.transcriptBox}
-          >
+          <ScrollView style={styles.transcriptBox}>
             {selectedFile || recordUri ? (
               <>
                 {transcribedText ? (
@@ -456,27 +461,35 @@ export default function TranscribeScreen() {
         )}
 
         <View style={[styles.footerContainer]}>
-          <TouchableOpacity
-            style={styles.footerBtn}
-            onPress={onRecordPress}
-            accessibilityLabel={
-              isRecording ? "Stop recording" : "Start recording"
-            }
-          >
-            <Ionicons
-              name={isRecording ? "stop" : "mic"}
-              size={36}
-              color={isRecording ? colors.red : colors.primary}
-            />
-          </TouchableOpacity>
+          <View style={styles.footerButtonWrapper}>
+            <TouchableOpacity
+              style={styles.footerBtn}
+              onPress={onRecordPress}
+              accessibilityLabel={
+                isRecording ? "Stop recording" : "Start recording"
+              }
+            >
+              <Ionicons
+                name={isRecording ? "stop" : "mic"}
+                size={36}
+                color={isRecording ? colors.red : colors.primary}
+              />
+            </TouchableOpacity>
+            <Text style={styles.footerBtnText}>
+              {isRecording ? "Stop" : "Record"}
+            </Text>
+          </View>
 
-          <TouchableOpacity
-            style={styles.footerBtn}
-            onPress={onUploadPress}
-            accessibilityLabel="Upload file"
-          >
-            <Octicons name="upload" size={32} color={colors.text} />
-          </TouchableOpacity>
+          <View style={styles.footerButtonWrapper}>
+            <TouchableOpacity
+              style={styles.footerBtn}
+              onPress={onUploadPress}
+              accessibilityLabel="Upload file"
+            >
+              <Octicons name="upload" size={32} color={colors.text} />
+            </TouchableOpacity>
+            <Text style={styles.footerBtnText}>Upload</Text>
+          </View>
         </View>
       </View>
 
@@ -487,95 +500,111 @@ export default function TranscribeScreen() {
         animationType="slide"
         onRequestClose={() => setConfirmModalVisible(false)}
       >
-        <View style={styles.modalOverlay}>
-          <View style={styles.modalContainer}>
-            <View>
-              <View style={styles.inputRow}>
-                <Text style={styles.label}>
-                  Patient ID / Name{" "}
-                  <Text style={{ color: colors.red }}>{"*"}</Text>
-                </Text>
+        <KeyboardAvoidingView
+          behavior={Platform.select({ ios: "height", android: "height" })}
+          style={styles.flex}
+        >
+          <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
+            <View style={styles.modalOverlay}>
+              <ScrollView
+                contentContainerStyle={styles.scrollViewContainer}
+                keyboardShouldPersistTaps="handled"
+              >
+                <View style={styles.modalContainer}>
+                  <View>
+                    <View style={styles.inputRow}>
+                      <Text style={styles.label}>
+                        Patient ID / Name{" "}
+                        <Text style={{ color: colors.red }}>{"*"}</Text>
+                      </Text>
 
-                <TextInput
-                  value={displayName}
-                  onChangeText={(text) => {
-                    setDisplayName(text);
-                    if (text.trim().length > 0) {
-                      setNameError(null); // remove error while typing
-                    }
-                  }}
-                  placeholder="Enter Patient ID / name"
-                  style={[
-                    styles.modalTextInput,
-                    nameError && { borderColor: colors.red },
-                  ]}
-                  placeholderTextColor={colors.muted}
-                />
-                {nameError && <Text style={styles.errorText}>{nameError}</Text>}
-              </View>
-              <View style={styles.inputRow}>
-                <Text style={styles.label}>Audio File</Text>
-                <View style={styles.selectedAudioChip}>
-                  <Text
-                    style={styles.selectedAudioText}
-                    numberOfLines={1}
-                    ellipsizeMode="middle"
+                      <TextInput
+                        value={displayName}
+                        onChangeText={(text) => {
+                          setDisplayName(text);
+                          if (text.trim().length > 0) {
+                            setNameError(null); // remove error while typing
+                          }
+                        }}
+                        placeholder="Enter Patient ID / name"
+                        style={[
+                          styles.modalTextInput,
+                          nameError && { borderColor: colors.red },
+                        ]}
+                        placeholderTextColor={colors.muted}
+                      />
+                      {nameError && (
+                        <Text style={styles.errorText}>{nameError}</Text>
+                      )}
+                    </View>
+                    <View style={styles.inputRow}>
+                      <Text style={styles.label}>Audio File</Text>
+                      <View style={styles.selectedAudioChip}>
+                        <Text
+                          style={styles.selectedAudioText}
+                          numberOfLines={1}
+                          ellipsizeMode="middle"
+                        >
+                          {selectedFile ?? recordUri?.split("/").pop()}
+                        </Text>
+                      </View>
+                    </View>
+                  </View>
+                  <View
+                    style={{
+                      flexDirection: "row",
+                      justifyContent: "flex-end",
+                      marginTop: 5,
+                      alignContent: "center",
+                    }}
                   >
-                    {selectedFile ?? recordUri?.split("/").pop()}
-                  </Text>
-                </View>
-              </View>
-            </View>
-            <View
-              style={{
-                flexDirection: "row",
-                justifyContent: "flex-end",
-                marginTop: 5,
-                alignContent: "center",
-              }}
-            >
-              <Pressable
-                onPress={() => setConfirmModalVisible(false)}
-                style={{
-                  marginRight: 15,
-                  justifyContent: "center",
-                  alignContent: "center",
-                }}
-              >
-                <Text
-                  style={{
-                    color: colors.red,
-                    fontWeight: "500",
-                    alignContent: "center",
-                  }}
-                >
-                  Cancel
-                </Text>
-              </Pressable>
-              <Pressable
-                onPress={() => {
-                  if (!displayName.trim()) {
-                    setNameError("Patient ID / Name is required");
-                    return;
-                  }
+                    <Pressable
+                      onPress={() => setConfirmModalVisible(false)}
+                      style={{
+                        marginRight: 15,
+                        justifyContent: "center",
+                        alignContent: "center",
+                      }}
+                    >
+                      <Text
+                        style={{
+                          color: colors.red,
+                          fontWeight: "500",
+                          alignContent: "center",
+                        }}
+                      >
+                        Cancel
+                      </Text>
+                    </Pressable>
+                    <Pressable
+                      onPress={() => {
+                        if (!displayName.trim()) {
+                          setNameError("Patient ID / Name is required");
+                          return;
+                        }
 
-                  setNameError(null);
-                  submitUpload(displayName);
-                }}
-                style={{
-                  backgroundColor: colors.green,
-                  paddingHorizontal: 12,
-                  paddingVertical: 8,
-                  borderRadius: 8,
-                }}
-              >
-                <Text style={{ color: colors.bgStart, fontWeight: "600" }}>
-                  Upload
-                </Text>
-              </Pressable>
+                        setNameError(null);
+                        submitUpload(displayName);
+                      }}
+                      style={{
+                        backgroundColor: colors.green,
+                        paddingHorizontal: 12,
+                        paddingVertical: 8,
+                        borderRadius: 8,
+                      }}
+                    >
+                      <Text
+                        style={{ color: colors.bgStart, fontWeight: "600" }}
+                      >
+                        Upload
+                      </Text>
+                    </Pressable>
+                  </View>
+                </View>
+              </ScrollView>
             </View>
-          </View>
-        </View>
+          </TouchableWithoutFeedback>
+        </KeyboardAvoidingView>
       </Modal>
 
       <Snackbar visible={showSnackbar} message={status} color={colors} />
@@ -591,6 +620,14 @@ const createStyles = (colors: any) =>
       justifyContent: "flex-start",
       alignItems: "center",
       backgroundColor: colors.bgEnd,
+    },
+    flex: {
+      flex: 1,
+    },
+    scrollViewContainer: {
+      flexGrow: 1,
+      justifyContent: "center",
+      alignItems: "center",
     },
     card: {
       width: width - 40,
@@ -644,7 +681,7 @@ const createStyles = (colors: any) =>
     transcriptBox: {
       marginTop: 28,
       width: "100%",
-      height: "78%",
+      height: "72%",
       backgroundColor: colors.primary3,
       boxShadow: "0 6px 6px rgba(0,0,0,0.1)",
       borderRadius: 10,
@@ -665,10 +702,21 @@ const createStyles = (colors: any) =>
       flexDirection: "row",
       justifyContent: "space-between",
       gap: 40,
-      alignItems: "center",
+      alignItems: "flex-start",
       paddingVertical: 10,
+      paddingBottom: 10,
       position: "absolute",
       bottom: 0,
+    },
+    footerButtonWrapper: {
+      alignItems: "center",
+      justifyContent: "flex-start",
+      gap: 8,
+    },
+    footerBtnText: {
+      fontSize: 12,
+      fontWeight: "600",
+      color: colors.text,
     },
     sourceRow: {
       flexDirection: "row",
@@ -676,6 +724,7 @@ const createStyles = (colors: any) =>
       justifyContent: "space-between",
       gap: 12,
       marginLeft: 12,
+      marginBottom: 140,
       width: width - 40,
     },
     fileNameText: { fontSize: 15, fontWeight: "400", color: colors.muted1 },

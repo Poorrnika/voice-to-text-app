@@ -17,6 +17,8 @@ import { useThemeColors } from "../../utils/ThemeContext";
 import axiosInstance from "../../axios/interceptors";
 import Loader from "../../utils/Loader";
 import { AUDIO_HISTORY_API_URL } from "../../axios/apiUrl";
+import Snackbar from "../../utils/Snackbar";
+import { GENERAL_ERROR_MESSAGE } from "../../utils/constants";
 
 if (
   Platform.OS === "android" &&
@@ -37,7 +39,6 @@ type AudioItem = {
   created_at: string;
 };
 
-
 const AudioAccordionScreen = () => {
   const [expanded, setExpanded] = useState<string | null>(null);
   const [playingId, setPlayingId] = useState<string | null>(null);
@@ -47,6 +48,9 @@ const AudioAccordionScreen = () => {
   const [expandedTranscript, setExpandedTranscript] = useState<string | null>(
     null,
   );
+  const [showSnackbar, setShowSnackbar] = useState(false);
+  const [status, setStatus] = useState("");
+
   const soundRef = useRef<Audio.Sound | null>(null);
   const colors = useThemeColors();
   const styles = createStyles(colors);
@@ -91,7 +95,12 @@ const AudioAccordionScreen = () => {
             setAudioHistory(response.data.audios);
           }
         } catch (error) {
-          console.error("Error fetching audio history:", error);
+          setLoading(false);
+          const errorMessage =
+            error instanceof Error ? error.message : GENERAL_ERROR_MESSAGE;
+          console.error("Error fetching audio history:", errorMessage);
+          setStatus(errorMessage);
+          setShowSnackbar(true);
           // Fallback to empty data if API fails
           setAudioHistory([]);
         } finally {
@@ -247,62 +256,66 @@ const AudioAccordionScreen = () => {
   };
 
   return (
-    <View style={styles.container}>
-      <View style={styles.headerContainer}>
-        <View style={styles.headerRow}>
-          <View style={styles.iconContainer}>
-            <Ionicons name="document-text" size={28} color={colors.cardBg} />
-          </View>
-          <Text style={[styles.title, { color: colors.text }]}>
-            Audio History
-          </Text>
-        </View>
-      </View>
-      <View style={styles.contentContainer}>
-        <View style={styles.searchBarContainer}>
-          <Ionicons
-            name="search"
-            size={20}
-            color={colors.muted1}
-            style={styles.searchIcon}
-          />
-          <TextInput
-            style={[styles.searchInput, { color: colors.text }]}
-            placeholder="Search..."
-            placeholderTextColor={colors.muted1}
-            value={searchQuery}
-            onChangeText={setSearchQuery}
-          />
-          {searchQuery.length > 0 && (
-            <TouchableOpacity
-              onPress={() => setSearchQuery("")}
-              style={styles.clearButton}
-            >
-              <Ionicons name="close-circle" size={20} color={colors.muted1} />
-            </TouchableOpacity>
-          )}
-        </View>
-
-        {loading ? (
-          <Loader visible={loading} text="Loading..." />
-        ) : filteredAudioHistory.length === 0 ? (
-          <View style={styles.emptyContainer}>
-            <Text style={styles.emptyText}>
-              {searchQuery.length > 0
-                ? "No audio records match your search"
-                : "No audio records found !"}
+    <>
+      <View style={styles.container}>
+        <View style={styles.headerContainer}>
+          <View style={styles.headerRow}>
+            <View style={styles.iconContainer}>
+              <Ionicons name="document-text" size={28} color={colors.cardBg} />
+            </View>
+            <Text style={[styles.title, { color: colors.text }]}>
+              Audio History
             </Text>
           </View>
-        ) : (
-          <FlatList
-            data={filteredAudioHistory}
-            keyExtractor={(item) => item.audio_id}
-            renderItem={renderItem}
-            contentContainerStyle={{ paddingBottom: 40 }}
-          />
-        )}
+        </View>
+        <View style={styles.contentContainer}>
+          <View style={styles.searchBarContainer}>
+            <Ionicons
+              name="search"
+              size={20}
+              color={colors.muted1}
+              style={styles.searchIcon}
+            />
+            <TextInput
+              style={[styles.searchInput, { color: colors.text }]}
+              placeholder="Search..."
+              placeholderTextColor={colors.muted1}
+              value={searchQuery}
+              onChangeText={setSearchQuery}
+            />
+            {searchQuery.length > 0 && (
+              <TouchableOpacity
+                onPress={() => setSearchQuery("")}
+                style={styles.clearButton}
+              >
+                <Ionicons name="close-circle" size={20} color={colors.muted1} />
+              </TouchableOpacity>
+            )}
+          </View>
+
+          {loading ? (
+            <Loader visible={loading} text="Loading..." />
+          ) : filteredAudioHistory.length === 0 ? (
+            <View style={styles.emptyContainer}>
+              <Text style={styles.emptyText}>
+                {searchQuery.length > 0
+                  ? "No audio records match your search"
+                  : "No audio records found !"}
+              </Text>
+            </View>
+          ) : (
+            <FlatList
+              data={filteredAudioHistory}
+              keyExtractor={(item) => item.audio_id}
+              renderItem={renderItem}
+              contentContainerStyle={{ paddingBottom: 40 }}
+            />
+          )}
+        </View>
       </View>
-    </View>
+      <Snackbar visible={showSnackbar} message={status} color={colors} />
+      <Loader visible={loading} text="Loading..." />
+    </>
   );
 };
 

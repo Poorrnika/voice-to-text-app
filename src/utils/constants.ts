@@ -12,8 +12,7 @@ export const CREATE_ACCOUNT_ERROR_MESSAGE =
 export const LOGIN_WELCOME_TEXT = "Welcome Back";
 export const LOGIN_TEXT = "Log In";
 export const LOGIN_SUCCESS_MESSAGE = "✅ Logged in successfully";
-export const LOGIN_ERROR_MESSAGE =
-  "❌ Error happened while trying to Login. Contact your admin";
+export const LOGIN_ERROR_MESSAGE = "❌ Error happened while trying to Login.";
 
 //Transcribe screen constants
 export const NO_TRANSCIBED_TEXT_YET =
@@ -31,3 +30,7 @@ export const UPLOAD_SUCCESS_NO_TRANSCRIPTION_TEXT =
 //Settings screen constants
 
 export const LOGOUT_TEXT = "Logout";
+
+// Error messages
+export const GENERAL_ERROR_MESSAGE =
+  "❌ An error occurred. Please try again after some time or contact support if the issue persists.";

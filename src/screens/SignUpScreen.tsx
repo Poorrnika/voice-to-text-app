@@ -75,7 +75,7 @@ export default function SignUpScreen() {
         JSON.stringify(signupData),
         {
           headers: headers,
-        }
+        },
       )
       .then(() => {
         setLoading(false);
@@ -87,7 +87,7 @@ export default function SignUpScreen() {
       })
       .catch((err) => {
         setLoading(false);
-        setStatus(CREATE_ACCOUNT_ERROR_MESSAGE);
+        setStatus(err.message || CREATE_ACCOUNT_ERROR_MESSAGE);
         setShowSnackbar(true);
         console.log("Error occured while signing up", JSON.stringify(err));
         reset();
@@ -107,8 +107,9 @@ export default function SignUpScreen() {
           style={styles.screenMirror}
         />
         <KeyboardAvoidingView
-          behavior={Platform.select({ ios: "padding", android: undefined })}
+          behavior={Platform.select({ ios: "padding", android: "height" })}
           style={styles.flex}
+          keyboardVerticalOffset={Platform.OS === "ios" ? 48 : 68}
         >
           <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
             <View style={styles.container}>
@@ -124,10 +125,12 @@ export default function SignUpScreen() {
                 </View>
                 <WelcomeScreenSvg width={250} height={250} />
               </View>
-              <BlurView intensity={50} tint="light">
+              <BlurView intensity={50} tint="light" style={{ flex: 1 }}>
                 <ScrollView
                   style={styles.card}
                   keyboardShouldPersistTaps="handled"
+                  scrollEnabled={true}
+                  showsVerticalScrollIndicator={true}
                 >
                   <Text style={styles.cardTitle}>{CREATE_ACCOUNT_TEXT}</Text>
 
@@ -345,7 +348,8 @@ const createStyles = (colors: any) =>
     },
     card: {
       backgroundColor: colors.bgEnd,
-      borderRadius: 30,
+      borderTopLeftRadius: 30,
+      borderTopRightRadius: 30,
       padding: 20,
       marginHorizontal: 20,
       width: "100%",

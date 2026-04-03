@@ -7,7 +7,8 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useTheme, useThemeColors } from "../../utils/ThemeContext";
 import Loader from "../../utils/Loader";
 import axiosInstance from "../../axios/interceptors";
-import { LOGOUT_TEXT } from "../../utils/constants";
+import { GENERAL_ERROR_MESSAGE, LOGOUT_TEXT } from "../../utils/constants";
+import Snackbar from "../../utils/Snackbar";
 
 export default function SettingsScreen() {
   const navigation = useNavigation<any>();
@@ -18,6 +19,8 @@ export default function SettingsScreen() {
   const [email, setEmail] = useState("");
   const [name, setName] = useState("");
   const [accountType, setAccountType] = useState("");
+  const [showSnackbar, setShowSnackbar] = useState(false);
+  const [status, setStatus] = useState("");
 
   const handleToggleTheme = () => toggleTheme();
 
@@ -49,7 +52,11 @@ export default function SettingsScreen() {
       })
       .catch((err: any) => {
         setLoading(false);
-        console.log("Error while logging out:", err);
+        const errorMessage =
+          err instanceof Error ? err.message : GENERAL_ERROR_MESSAGE;
+        console.log("Error while logging out:", errorMessage);
+        setStatus(errorMessage);
+        setShowSnackbar(true);
       });
   };
 
@@ -114,6 +121,7 @@ export default function SettingsScreen() {
           </TouchableOpacity>
         </View>
       </View>
+      <Snackbar visible={showSnackbar} message={status} color={colors} />
       <Loader visible={loading} text="Logging out..." />
     </>
   );

@@ -10,6 +10,7 @@ import {
   Platform,
   TouchableWithoutFeedback,
   Keyboard,
+  ScrollView,
 } from "react-native";
 import { LinearGradient } from "expo-linear-gradient";
 import { Ionicons, MaterialIcons } from "@expo/vector-icons";
@@ -106,9 +107,9 @@ export default function LoginScreen() {
       })
       .catch((err) => {
         setLoading(false);
-        setStatus(LOGIN_ERROR_MESSAGE);
+        setStatus((err.message || LOGIN_ERROR_MESSAGE));
         setShowSnackbar(true);
-        console.log("Error while logging in", JSON.stringify(err));
+        console.log("Error while logging in", JSON.stringify(err.message));
       });
   };
 
@@ -125,8 +126,9 @@ export default function LoginScreen() {
           style={styles.screenMirror}
         />
         <KeyboardAvoidingView
-          behavior={Platform.select({ ios: "padding", android: undefined })}
+          behavior={Platform.select({ ios: "padding", android: "height" })}
           style={styles.flex}
+          keyboardVerticalOffset={Platform.OS === "ios" ? 48 : 70}
         >
           <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
             <View style={styles.container}>
@@ -142,8 +144,13 @@ export default function LoginScreen() {
                 </View>
                 <WelcomeScreenSvg width={250} height={250} />
               </View>
-              <BlurView intensity={50} tint="light">
-                <View style={styles.card}>
+              <BlurView intensity={50} tint="light" style={{ flex: 1 }}>
+                <ScrollView
+                  style={styles.card}
+                  keyboardShouldPersistTaps="handled"
+                  scrollEnabled={true}
+                  showsVerticalScrollIndicator={true}
+                >
                   <Text style={styles.cardTitle}>{LOGIN_WELCOME_TEXT}</Text>
 
                   <View style={styles.inputRow}>
@@ -243,7 +250,7 @@ export default function LoginScreen() {
                   >
                     <Text style={styles.primaryBtnText}>{LOGIN_TEXT}</Text>
                   </TouchableOpacity>
-                </View>
+                </ScrollView>
               </BlurView>
             </View>
           </TouchableWithoutFeedback>
@@ -278,7 +285,8 @@ const createStyles = (colors: any) =>
     },
     card: {
       backgroundColor: colors.bgEnd,
-      borderRadius: 30,
+      borderTopLeftRadius: 30,
+      borderTopRightRadius: 30,
       padding: 20,
       marginHorizontal: 20,
       width: "100%",
