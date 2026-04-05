@@ -16,6 +16,7 @@ import {
 } from "react-native";
 import { Ionicons, Octicons } from "@expo/vector-icons";
 import * as DocumentPicker from "expo-document-picker";
+import * as KeepAwake from "expo-keep-awake";
 import { Audio } from "expo-av";
 import * as FileSystem from "expo-file-system/legacy";
 import { TRANSCRIBE_API_URL } from "../../axios/apiUrl";
@@ -30,6 +31,7 @@ import {
   NO_TRANSCIBED_TEXT,
   NO_TRANSCIBED_TEXT_YET,
   SELECT_ANY_FILE_TEXT,
+  TAG_LINE,
   UPLOAD_SUCCESS_NO_TRANSCRIPTION_TEXT,
   UPLOAD_SUCCESS_TEXT,
 } from "../../utils/constants";
@@ -197,6 +199,8 @@ export default function TranscribeScreen() {
       if (sound) {
         sound.unloadAsync();
       }
+      // Deactivate keep awake on unmount
+      KeepAwake.deactivateKeepAwake();
     };
   }, [sound]);
 
@@ -236,7 +240,7 @@ export default function TranscribeScreen() {
         await Audio.setAudioModeAsync({
           allowsRecordingIOS: true,
           playsInSilentModeIOS: true,
-          staysActiveInBackground: false,
+          staysActiveInBackground: true,
           shouldDuckAndroid: true,
           playThroughEarpieceAndroid: false,
         });
@@ -245,11 +249,17 @@ export default function TranscribeScreen() {
           await Audio.Recording.createAsync(recordingOptions);
         setRecording(recording);
         setIsRecording(true);
+
+        // Keep the screen awake while recording
+        await KeepAwake.activateKeepAwakeAsync();
       } else {
         if (recording === null) return;
         // Stop Recording
         setIsRecording(false);
         await recording.stopAndUnloadAsync();
+
+        // Stop keeping the screen awake
+        await KeepAwake.deactivateKeepAwake();
 
         const originalUri = recording.getURI();
         if (!originalUri) return;
@@ -304,6 +314,8 @@ export default function TranscribeScreen() {
       console.error("Recording error:", err);
       setIsRecording(false);
       setRecording(null);
+      // Deactivate keep awake on error
+      await KeepAwake.deactivateKeepAwake();
       setStatus("❌ Recording failed. Please try again.");
       setShowSnackbar(true);
     }
@@ -349,6 +361,10 @@ export default function TranscribeScreen() {
         await sound.unloadAsync();
         setSound(null);
       }
+      // Deactivate keep awake when cancelling
+      if (isRecording) {
+        await KeepAwake.deactivateKeepAwake();
+      }
     } catch (e) {}
     setSelectedFile(null);
     setRecordUri(null);
@@ -370,10 +386,22 @@ export default function TranscribeScreen() {
             }}
           >
             <Image
-              source={require("../../../assets/favicon.png")}
-              style={{ width: 40, height: 40, marginRight: 8 }}
+              source={require("../../../assets/favicon.jpeg")}
+              style={{ width: 56, height: 56, marginRight: 8 }}
             />
-            <Text style={styles.title}>{APP_NAME}</Text>
+            <View style={{ flexDirection: "column", alignItems: "flex-start" }}>
+              <Text style={styles.title}>{APP_NAME}</Text>
+              <Text
+                style={{
+                  marginLeft: 2,
+                  color: colors.muted,
+                  fontSize: 13,
+                  flexWrap: "wrap",
+                }}
+              >
+                {TAG_LINE}
+              </Text>
+            </View>
           </View>
 
           <ScrollView style={styles.transcriptBox}>
@@ -681,7 +709,7 @@ const createStyles = (colors: any) =>
     transcriptBox: {
       marginTop: 28,
       width: "100%",
-      height: "72%",
+      height: "70%",
       backgroundColor: colors.primary3,
       boxShadow: "0 6px 6px rgba(0,0,0,0.1)",
       borderRadius: 10,

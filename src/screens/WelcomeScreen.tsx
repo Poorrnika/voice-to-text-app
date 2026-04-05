@@ -5,6 +5,7 @@ import {
   StyleSheet,
   TouchableOpacity,
   Dimensions,
+  Image,
 } from "react-native";
 import { useNavigation } from "@react-navigation/native";
 import WelcomeSVGComponent from "../../assets/svg/WelcomeScreenSvg";
@@ -25,9 +26,13 @@ function WelcomeScreen() {
 
   return (
     <View style={[styles.container, styles.gradient]}>
-      <View style={styles.topGap} />
-      <WelcomeSVGComponent width={400} height={400} />
-      <Text style={styles.title}>Welcome to {APP_NAME}</Text>
+      {/* <View style={styles.topGap} /> */}
+      {/* <WelcomeSVGComponent width={400} height={400} /> */}
+      <Image
+        source={require("../../assets/favicon.jpeg")}
+        style={styles.logoContainer}
+      />
+      {/* <Text style={styles.title}>Welcome to {APP_NAME}</Text> */}
       <TouchableOpacity
         style={styles.primaryButton}
         onPress={() => navigation.navigate("SignUp")}
@@ -62,6 +67,14 @@ const createStyles = (colors: any) =>
     gradient: {
       justifyContent: "center",
       alignItems: "center",
+    },
+    logoContainer: {
+      width: 310,
+      height: 310,
+      marginBottom: 80,
+      borderRadius: 15,
+      boxShadow: `0 4px 12px ${colors.shadow}`,
+      marginTop: -60,
     },
     title: {
       fontSize: 28,

@@ -1,4 +1,5 @@
-export const APP_NAME = "AudioIntel";
+export const APP_NAME = "iTasjil";
+export const TAG_LINE = "Hear clearly. Transcribe accurately. Heal faster.";
 
 //Signup screen constants
 export const CREATE_ACCOUNT_TEXT = "Create Your Account";
@@ -19,7 +20,7 @@ export const NO_TRANSCIBED_TEXT_YET =
   "Audio is not transcribed yet. Click on green tick button to proceed further.";
 export const NO_TRANSCIBED_TEXT =
   "No transcription available for the uploaded Audio.";
-export const NO_FILE_SELECTED = "No file selected or recorded yet.";
+export const NO_FILE_SELECTED = "Recorded transcription will appear here.";
 export const SELECT_ANY_FILE_TEXT =
   "💬 Please record or select a file before submitting.";
 export const AUDIO_SELECTED_TEXT = "💬 No audio selected.";

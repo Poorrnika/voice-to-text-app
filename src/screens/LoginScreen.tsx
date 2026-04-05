@@ -11,6 +11,7 @@ import {
   TouchableWithoutFeedback,
   Keyboard,
   ScrollView,
+  Image,
 } from "react-native";
 import { LinearGradient } from "expo-linear-gradient";
 import { Ionicons, MaterialIcons } from "@expo/vector-icons";
@@ -63,7 +64,7 @@ export default function LoginScreen() {
   };
 
   const onLogin = async (data: any) => {
-    setLoading(true);
+    // setLoading(true);
     const device_id = generateRandom10Digit().toString();
     const loginData = {
       username: data.email,
@@ -107,7 +108,7 @@ export default function LoginScreen() {
       })
       .catch((err) => {
         setLoading(false);
-        setStatus((err.message || LOGIN_ERROR_MESSAGE));
+        setStatus(err.message || LOGIN_ERROR_MESSAGE);
         setShowSnackbar(true);
         console.log("Error while logging in", JSON.stringify(err.message));
       });
@@ -142,7 +143,11 @@ export default function LoginScreen() {
                     />
                   </TouchableOpacity>
                 </View>
-                <WelcomeScreenSvg width={250} height={250} />
+                {/* <WelcomeScreenSvg width={250} height={250} /> */}
+                <Image
+                  source={require("../../assets/favicon.jpeg")}
+                  style={styles.logoContainer}
+                />
               </View>
               <BlurView intensity={50} tint="light" style={{ flex: 1 }}>
                 <ScrollView
@@ -408,5 +413,13 @@ const createStyles = (colors: any) =>
     },
     socialBtn: {
       marginHorizontal: 15,
+    },
+    logoContainer: {
+      width: 210,
+      height: 210,
+      marginBottom: 30,
+      borderRadius: 15,
+      boxShadow: `0 4px 12px ${colors.shadow}`,
+      marginTop: 20,
     },
   });

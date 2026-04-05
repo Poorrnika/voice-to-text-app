@@ -17,57 +17,71 @@ export interface ColorPalette {
   muted: string;
   muted1: string;
   muted2: string;
+  shadow: string;
   green: string;
   green1: string;
   red: string;
 }
 
 export const lightColors: ColorPalette = {
-  bgStart: "#fff5fb",
-  bgMid: "#fff0f9",
-  bgEnd: "#f6f6ff",
+  bgStart: "#eef7fb", // very light blue tint
+  bgMid: "#e3f2f9",
+  bgEnd: "#f5fbff",
+
   cardBg: "rgba(255,255,255,0.96)",
-  primary: "#a63affff", // purple
-  primary1: "#c8acffff", // light purple
-  primary2: "#d9c6ffff", // light purple
-  primary3: "#ffffffff",
-  secondary: "#ad49ffff",
-  accent: "#FF85D0", // pink
-  accent1: "#feb3e1ff", // pink
-  text: "#1f1f1f",
-  muted: "#4f4f4fff",
-  muted2: "#cececeff",
-  muted1: "#333333ff",
-  green: "#3ea049ff",
-  green1: "#0dc322ff",
-  red: "#df4747ff",
-  border: "#888888ff",
+
+  primary: "#026193", // base blue (your main color)
+  primary1: "#4da3c7", // lighter blue
+  primary2: "#80c2dc", // softer blue
+  primary3: "#ffffff", // white surface
+
+  secondary: "#014a70", // darker blue for depth
+
+  accent: "#38a9e0", // vibrant accessible accent
+  accent1: "#a6d8ef", // soft accent
+
+  text: "#0f172a", // near-black (WCAG safe)
+  muted: "#475569", // slate gray-blue
+  muted1: "#1e293b",
+  muted2: "#cbd5e1",
+  shadow: "rgba(0,0,0,0.3)",
+  green: "#2e9d5b",
+  green1: "#22c55e",
+
+  red: "#dc2626",
+
+  border: "#64748b",
 };
 
 export const darkColors: ColorPalette = {
-  bgStart: "#1a141d",
-  bgMid: "#221a27",
-  bgEnd: "#1a1025",
-  cardBg: "rgba(20,20,20,0.92)",
+  bgStart: "#0b1e2d", // deep blue-black
+  bgMid: "#0f2538",
+  bgEnd: "#081824",
 
-  primary1: "#b68bff",
-  primary: "#9f6dff",
-  primary2: "#7f4fff",
-  primary3: "#251c31",
+  cardBg: "#00263b",
 
-  secondary: "#c96dff",
-  accent: "#ff77c8",
-  accent1: "#d36fa8",
+  primary: "#4da3c7", // lighter for dark bg visibility
+  primary1: "#80c2dc",
+  primary2: "#026193", // base color used deeper
+  primary3: "#00263b",
 
-  text: "#f1ecf8",
-  muted: "#b6a8c7",
-  muted1: "#8b7b99",
-  muted2: "#4b4154",
+  secondary: "#38a9e0",
 
-  green: "#4bd37c",
-  green1: "#17a74a",
-  red: "#ff6b6b",
-  border: "#d6d6d6ff",
+  accent: "#5cc4ff",
+  accent1: "#2a6f8f",
+
+  text: "#e6f0f7", // high contrast light text
+  muted: "#9fb3c8",
+  muted1: "#6b859c",
+  muted2: "#334155",
+  shadow: "rgba(0,0,0,0.5)",
+
+  green: "#4ade80",
+  green1: "#22c55e",
+
+  red: "#f87171",
+
+  border: "#64748b",
 };
 
 export const getColorsByTheme = (theme: ThemeType): ColorPalette =>

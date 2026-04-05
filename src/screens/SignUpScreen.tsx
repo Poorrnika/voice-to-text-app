@@ -11,6 +11,7 @@ import {
   Keyboard,
   TouchableWithoutFeedback,
   Dimensions,
+  Image,
 } from "react-native";
 import { LinearGradient } from "expo-linear-gradient";
 import { Ionicons, MaterialIcons } from "@expo/vector-icons";
@@ -123,7 +124,11 @@ export default function SignUpScreen() {
                     />
                   </TouchableOpacity>
                 </View>
-                <WelcomeScreenSvg width={250} height={250} />
+                {/* <WelcomeScreenSvg width={250} height={250} /> */}
+                <Image
+                  source={require("../../assets/favicon.jpeg")}
+                  style={styles.logoContainer}
+                />
               </View>
               <BlurView intensity={50} tint="light" style={{ flex: 1 }}>
                 <ScrollView
@@ -492,5 +497,13 @@ const createStyles = (colors: any) =>
       color: "#fff",
       fontWeight: "800",
       fontSize: 16,
+    },
+    logoContainer: {
+      width: 210,
+      height: 210,
+      marginBottom: 30,
+      borderRadius: 15,
+      boxShadow: `0 4px 12px ${colors.shadow}`,
+      marginTop: 20,
     },
   });

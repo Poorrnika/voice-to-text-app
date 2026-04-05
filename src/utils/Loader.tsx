@@ -1,17 +1,19 @@
 import React from "react";
 import { ActivityIndicator, Modal, View, Text, StyleSheet } from "react-native";
-
+import { useThemeColors } from "./ThemeContext";
 interface LoaderProps {
   visible: boolean;
   text?: string;
 }
 
 export default function Loader({ visible, text }: LoaderProps) {
+  const colors = useThemeColors();
+
   return (
     <Modal transparent animationType="fade" visible={visible}>
       <View style={styles.overlay}>
         <View style={styles.container}>
-          <ActivityIndicator size="large" color="#8e44ad" />
+          <ActivityIndicator size="large" color={colors.primary} />
           {text ? <Text style={styles.text}>{text}</Text> : null}
         </View>
       </View>

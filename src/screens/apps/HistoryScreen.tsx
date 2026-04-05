@@ -9,6 +9,7 @@ import {
   Platform,
   UIManager,
   TextInput,
+  ActivityIndicator,
 } from "react-native";
 import { useFocusEffect } from "@react-navigation/native";
 import { Ionicons } from "@expo/vector-icons";
@@ -50,6 +51,7 @@ const AudioAccordionScreen = () => {
   );
   const [showSnackbar, setShowSnackbar] = useState(false);
   const [status, setStatus] = useState("");
+  const [loadingAudioId, setLoadingAudioId] = useState<string | null>(null);
 
   const soundRef = useRef<Audio.Sound | null>(null);
   const colors = useThemeColors();
@@ -119,6 +121,7 @@ const AudioAccordionScreen = () => {
 
   const handlePlayPause = async (item: AudioItem) => {
     try {
+      setLoadingAudioId(item.audio_id);
       // Stop existing audio
       if (soundRef.current) {
         await soundRef.current.unloadAsync();
@@ -128,6 +131,7 @@ const AudioAccordionScreen = () => {
       // If same item is clicked again → pause
       if (playingId === item.audio_id) {
         setPlayingId(null);
+        setLoadingAudioId(null);
         return;
       }
 
@@ -135,15 +139,14 @@ const AudioAccordionScreen = () => {
       const response = await axiosInstance.get(
         `${process.env.EXPO_PUBLIC_MOBILE_APP_API_BASE_URL}/api/v1/ingest/media/${item.audio_id}/play`,
       );
-
+      console.log("Play API response:", response.data);
       // Extract the media URL from the response
       const mediaUrl =
-        response.data?.data?.media_url ||
-        response.data?.media_url ||
-        item.media_url;
+        response.data?.signed_url || response.data?.media_url || item.media_url;
 
       if (!mediaUrl) {
         console.error("No media URL returned from API");
+        setLoadingAudioId(null);
         return;
       }
 
@@ -152,7 +155,7 @@ const AudioAccordionScreen = () => {
       });
       soundRef.current = sound;
       setPlayingId(item.audio_id);
-
+      setLoadingAudioId(null);
       await sound.playAsync();
 
       sound.setOnPlaybackStatusUpdate((status: AVPlaybackStatus) => {
@@ -161,6 +164,7 @@ const AudioAccordionScreen = () => {
         }
       });
     } catch (error) {
+      setLoadingAudioId(null);
       console.warn("Audio playback error:", error);
     }
   };
@@ -181,11 +185,15 @@ const AudioAccordionScreen = () => {
               onPress={() => handlePlayPause(item)}
               activeOpacity={0.7}
             >
-              <Ionicons
-                name={isPlaying ? "pause-circle" : "play-circle"}
-                size={28}
-                color={colors.primary}
-              />
+              {loadingAudioId === item.audio_id ? (
+                <ActivityIndicator color={colors.primary} />
+              ) : (
+                <Ionicons
+                  name={isPlaying ? "pause-circle" : "play-circle"}
+                  size={28}
+                  color={colors.primary}
+                />
+              )}
             </TouchableOpacity>
             <View style={{ flex: 1, marginLeft: 10 }}>
               <Text style={styles.audioName} numberOfLines={1}>
