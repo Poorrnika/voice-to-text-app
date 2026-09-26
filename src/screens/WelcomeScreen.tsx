@@ -29,7 +29,7 @@ function WelcomeScreen() {
       {/* <View style={styles.topGap} /> */}
       {/* <WelcomeSVGComponent width={400} height={400} /> */}
       <Image
-        source={require("../../assets/favicon.jpeg")}
+        source={require("../../assets/favicon.png")}
         style={styles.logoContainer}
       />
       {/* <Text style={styles.title}>Welcome to {APP_NAME}</Text> */}

@@ -126,7 +126,7 @@ export default function SignUpScreen() {
                 </View>
                 {/* <WelcomeScreenSvg width={250} height={250} /> */}
                 <Image
-                  source={require("../../assets/favicon.jpeg")}
+                  source={require("../../assets/favicon.png")}
                   style={styles.logoContainer}
                 />
               </View>

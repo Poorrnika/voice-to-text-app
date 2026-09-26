@@ -64,7 +64,7 @@ export default function LoginScreen() {
   };
 
   const onLogin = async (data: any) => {
-    // setLoading(true);
+    setLoading(true);
     const device_id = generateRandom10Digit().toString();
     const loginData = {
       username: data.email,
@@ -145,7 +145,7 @@ export default function LoginScreen() {
                 </View>
                 {/* <WelcomeScreenSvg width={250} height={250} /> */}
                 <Image
-                  source={require("../../assets/favicon.jpeg")}
+                  source={require("../../assets/favicon.png")}
                   style={styles.logoContainer}
                 />
               </View>

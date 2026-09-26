@@ -1,4 +1,4 @@
-export const APP_NAME = "iTasjil";
+export const APP_NAME = "Clinyn";
 export const TAG_LINE = "Hear clearly. Transcribe accurately. Heal faster.";
 
 //Signup screen constants
@@ -27,6 +27,15 @@ export const AUDIO_SELECTED_TEXT = "💬 No audio selected.";
 export const UPLOAD_SUCCESS_TEXT = "✅ Upload successful";
 export const UPLOAD_SUCCESS_NO_TRANSCRIPTION_TEXT =
   "💬 Upload processed — no transcription found.";
+
+//Calendar screen constants
+export const APPOINTMENT_CREATED_SUCCESS =
+  "✅ Appointment created successfully";
+export const APPOINTMENT_CREATION_ERROR = "❌ Error creating appointment";
+export const FETCH_APPOINTMENTS_ERROR = "❌ Error fetching appointments";
+export const RECORD_APPOINTMENT = "Record";
+export const UPLOAD_APPOINTMENT = "Upload Files";
+export const APPOINTMENT_CANCELLED = "❌ Appointment creation cancelled";
 
 //Settings screen constants
 

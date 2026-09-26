@@ -139,7 +139,6 @@ const AudioAccordionScreen = () => {
       const response = await axiosInstance.get(
         `${process.env.EXPO_PUBLIC_MOBILE_APP_API_BASE_URL}/api/v1/ingest/media/${item.audio_id}/play`,
       );
-      console.log("Play API response:", response.data);
       // Extract the media URL from the response
       const mediaUrl =
         response.data?.signed_url || response.data?.media_url || item.media_url;

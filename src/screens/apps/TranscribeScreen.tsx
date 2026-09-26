@@ -36,6 +36,8 @@ import {
   UPLOAD_SUCCESS_TEXT,
 } from "../../utils/constants";
 import { Platform } from "react-native";
+import AudioRecorderService from "../../utils/AudioRecorderService";
+import AudioService from "../../utils/AudioService";
 
 const deviceType = Platform.OS;
 
@@ -62,28 +64,6 @@ export default function TranscribeScreen() {
   const colors = useThemeColors();
   const styles = createStyles(colors);
 
-  const onUploadPress = async () => {
-    try {
-      const res: any = await DocumentPicker.getDocumentAsync({
-        type: "audio/*",
-      });
-      setSelectedFile(res.assets[0].name || res.assets[0].uri);
-      setRecordUri(res.assets[0].uri || null);
-      const uri = res.assets[0].uri;
-      const name = res.assets[0].name;
-      const mime = res.assets[0].mimeType || "audio/m4a";
-      const formatJSON: any = {
-        uri,
-        name,
-        type: mime,
-      };
-      setFileBlob(formatJSON);
-
-      setMode("file");
-    } catch (err) {
-      console.warn("picker error", err);
-    }
-  };
   // Modal & naming state for confirming upload
   const [confirmModalVisible, setConfirmModalVisible] =
     useState<boolean>(false);
@@ -185,142 +165,164 @@ export default function TranscribeScreen() {
     setDisplayName("");
   }, [confirmModalVisible]);
 
-  // Request permissions on mount
-  useEffect(() => {
-    (async () => {
-      const { status } = await Audio.requestPermissionsAsync();
-      if (status !== "granted") {
-        alert("Permission to access microphone is required!");
-      }
-    })();
+  // // Request permissions on mount
+  // useEffect(() => {
+  //   (async () => {
+  //     const { status } = await Audio.requestPermissionsAsync();
+  //     if (status !== "granted") {
+  //       alert("Permission to access microphone is required!");
+  //     }
+  //   })();
 
-    return () => {
-      // Cleanup sound on unmount
-      if (sound) {
-        sound.unloadAsync();
-      }
-      // Deactivate keep awake on unmount
-      KeepAwake.deactivateKeepAwake();
-    };
-  }, [sound]);
+  //   return () => {
+  //     // Cleanup sound on unmount
+  //     if (sound) {
+  //       sound.unloadAsync();
+  //     }
+  //     // Deactivate keep awake on unmount
+  //     KeepAwake.deactivateKeepAwake();
+  //   };
+  // }, [sound]);
 
-  const onRecordPress = async () => {
-    try {
-      if (!isRecording) {
-        // Check permissions first
-        const { status } = await Audio.requestPermissionsAsync();
-        if (status !== "granted") {
-          setStatus("❌ Microphone permission required");
-          setShowSnackbar(true);
-          return;
-        }
+  // const onRecordPress = async () => {
+  //   try {
+  //     if (!isRecording) {
+  //       // Check permissions first
+  //       const { status } = await Audio.requestPermissionsAsync();
+  //       if (status !== "granted") {
+  //         setStatus("❌ Microphone permission required");
+  //         setShowSnackbar(true);
+  //         return;
+  //       }
 
-        const recordingOptions: any = {
-          // iOS - Use proper WAV format settings
-          ios: {
-            extension: ".wav",
-            sampleRate: 44100, // Use standard sample rate for better compatibility
-            numberOfChannels: 1,
-            linearPCMBitDepth: 16,
-            linearPCMIsBigEndian: false,
-            linearPCMIsFloat: false,
-          },
-          // Android
-          android: {
-            extension: ".wav",
-            sampleRate: 44100,
-            numberOfChannels: 1,
-            bitRate: 128000,
-          },
-          // common
-          isMeteringEnabled: true,
-          keepAudioActiveHint: false,
-        };
+  //       const recordingOptions: any = {
+  //         // iOS - Use proper WAV format settings
+  //         ios: {
+  //           extension: ".wav",
+  //           sampleRate: 44100, // Use standard sample rate for better compatibility
+  //           numberOfChannels: 1,
+  //           linearPCMBitDepth: 16,
+  //           linearPCMIsBigEndian: false,
+  //           linearPCMIsFloat: false,
+  //         },
+  //         // Android
+  //         android: {
+  //           extension: ".wav",
+  //           sampleRate: 44100,
+  //           numberOfChannels: 1,
+  //           bitRate: 128000,
+  //         },
+  //         // common
+  //         isMeteringEnabled: true,
+  //         keepAudioActiveHint: false,
+  //       };
 
-        await Audio.setAudioModeAsync({
-          allowsRecordingIOS: true,
-          playsInSilentModeIOS: true,
-          staysActiveInBackground: true,
-          shouldDuckAndroid: true,
-          playThroughEarpieceAndroid: false,
-        });
+  //       await Audio.setAudioModeAsync({
+  //         allowsRecordingIOS: true,
+  //         playsInSilentModeIOS: true,
+  //         staysActiveInBackground: true,
+  //         shouldDuckAndroid: true,
+  //         playThroughEarpieceAndroid: false,
+  //       });
 
-        const { recording } =
-          await Audio.Recording.createAsync(recordingOptions);
-        setRecording(recording);
-        setIsRecording(true);
+  //       const { recording } =
+  //         await Audio.Recording.createAsync(recordingOptions);
+  //       setRecording(recording);
+  //       setIsRecording(true);
 
-        // Keep the screen awake while recording
-        await KeepAwake.activateKeepAwakeAsync();
-      } else {
-        if (recording === null) return;
-        // Stop Recording
-        setIsRecording(false);
-        await recording.stopAndUnloadAsync();
+  //       // Keep the screen awake while recording
+  //       await KeepAwake.activateKeepAwakeAsync();
+  //     } else {
+  //       if (recording === null) return;
+  //       // Stop Recording
+  //       setIsRecording(false);
+  //       await recording.stopAndUnloadAsync();
 
-        // Stop keeping the screen awake
-        await KeepAwake.deactivateKeepAwake();
+  //       // Stop keeping the screen awake
+  //       await KeepAwake.deactivateKeepAwake();
 
-        const originalUri = recording.getURI();
-        if (!originalUri) return;
+  //       const originalUri = recording.getURI();
+  //       if (!originalUri) return;
 
-        // Generate new filename: AUD_(date)_(timestamp)
-        const now = new Date();
-        const date = now.toISOString().split("T")[0]; // YYYY-MM-DD
-        const timestamp = now.getTime(); // milliseconds
-        const newFileName = `AUD_${date}_${timestamp}.wav`;
+  //       // Generate new filename: AUD_(date)_(timestamp)
+  //       const now = new Date();
+  //       const date = now.toISOString().split("T")[0]; // YYYY-MM-DD
+  //       const timestamp = now.getTime(); // milliseconds
+  //       const newFileName = `AUD_${date}_${timestamp}.wav`;
 
-        // Get the directory path and create new URI
-        const dirPath = originalUri.substring(0, originalUri.lastIndexOf("/"));
-        const newUri = `${dirPath}/${newFileName}`;
-        // Rename the file by copying to new location and deleting original
-        let finalUri = originalUri;
-        try {
-          // Use the legacy FileSystem API for binary file support
-          await FileSystem.copyAsync({
-            from: originalUri,
-            to: newUri,
-          });
-          await FileSystem.deleteAsync(originalUri);
-          finalUri = newUri;
-        } catch (err) {
-          console.warn("File rename error:", err);
-          // Use original URI if rename fails
-        }
+  //       // Get the directory path and create new URI
+  //       const dirPath = originalUri.substring(0, originalUri.lastIndexOf("/"));
+  //       const newUri = `${dirPath}/${newFileName}`;
+  //       // Rename the file by copying to new location and deleting original
+  //       let finalUri = originalUri;
+  //       try {
+  //         // Use the legacy FileSystem API for binary file support
+  //         await FileSystem.copyAsync({
+  //           from: originalUri,
+  //           to: newUri,
+  //         });
+  //         await FileSystem.deleteAsync(originalUri);
+  //         finalUri = newUri;
+  //       } catch (err) {
+  //         console.warn("File rename error:", err);
+  //         // Use original URI if rename fails
+  //       }
 
-        const formatJSON: any = {
-          uri: finalUri,
-          name:
-            finalUri === newUri
-              ? newFileName
-              : originalUri.split("/").pop() || "recording.wav",
-          type: "audio/wav", // Always use WAV format
-        };
-        setRecordUri(newUri);
-        setRecording(null);
-        setMode("speech");
-        setAudioBlob(formatJSON);
+  //       const formatJSON: any = {
+  //         uri: finalUri,
+  //         name:
+  //           finalUri === newUri
+  //             ? newFileName
+  //             : originalUri.split("/").pop() || "recording.wav",
+  //         type: "audio/wav", // Always use WAV format
+  //       };
+  //       setRecordUri(newUri);
+  //       setRecording(null);
+  //       setMode("speech");
+  //       setAudioBlob(formatJSON);
 
-        // Play the recorded audio
-        try {
-          const { sound } = await Audio.Sound.createAsync({ uri: finalUri });
-          setSound(sound);
-          await sound.playAsync();
-        } catch (playError) {
-          console.warn("Playback error:", playError);
-        }
-      }
-    } catch (err) {
-      console.error("Recording error:", err);
-      setIsRecording(false);
-      setRecording(null);
-      // Deactivate keep awake on error
-      await KeepAwake.deactivateKeepAwake();
-      setStatus("❌ Recording failed. Please try again.");
-      setShowSnackbar(true);
-    }
-  };
+  //       // Play the recorded audio
+  //       try {
+  //         const { sound } = await Audio.Sound.createAsync({ uri: finalUri });
+  //         setSound(sound);
+  //         await sound.playAsync();
+  //       } catch (playError) {
+  //         console.warn("Playback error:", playError);
+  //       }
+  //     }
+  //   } catch (err) {
+  //     console.error("Recording error:", err);
+  //     setIsRecording(false);
+  //     setRecording(null);
+  //     // Deactivate keep awake on error
+  //     await KeepAwake.deactivateKeepAwake();
+  //     setStatus("❌ Recording failed. Please try again.");
+  //     setShowSnackbar(true);
+  //   }
+  // };
 
+  // const onUploadPress = async () => {
+  //   try {
+  //     const res: any = await DocumentPicker.getDocumentAsync({
+  //       type: "audio/*",
+  //     });
+  //     setSelectedFile(res.assets[0].name || res.assets[0].uri);
+  //     setRecordUri(res.assets[0].uri || null);
+  //     const uri = res.assets[0].uri;
+  //     const name = res.assets[0].name;
+  //     const mime = res.assets[0].mimeType || "audio/m4a";
+  //     const formatJSON: any = {
+  //       uri,
+  //       name,
+  //       type: mime,
+  //     };
+  //     setFileBlob(formatJSON);
+
+  //     setMode("file");
+  //   } catch (err) {
+  //     console.warn("picker error", err);
+  //   }
+  // };
   const playAudio = async () => {
     try {
       const uri = recordUri;
@@ -386,7 +388,7 @@ export default function TranscribeScreen() {
             }}
           >
             <Image
-              source={require("../../../assets/favicon.jpeg")}
+              source={require("../../../assets/favicon.png")}
               style={{ width: 56, height: 56, marginRight: 8 }}
             />
             <View style={{ flexDirection: "column", alignItems: "flex-start" }}>
@@ -488,7 +490,7 @@ export default function TranscribeScreen() {
           </View>
         )}
 
-        <View style={[styles.footerContainer]}>
+        {/* <View style={[styles.footerContainer]}>
           <View style={styles.footerButtonWrapper}>
             <TouchableOpacity
               style={styles.footerBtn}
@@ -518,7 +520,22 @@ export default function TranscribeScreen() {
             </TouchableOpacity>
             <Text style={styles.footerBtnText}>Upload</Text>
           </View>
-        </View>
+        </View> */}
+        <AudioService
+          setStatus={setStatus}
+          setShowSnackbar={setShowSnackbar}
+          setMode={setMode}
+          setAudioBlob={setAudioBlob}
+          setFileBlob={setFileBlob}
+          setSelectedFile={setSelectedFile}
+          recording={recording}
+          setRecording={setRecording}
+          setRecordUri={setRecordUri}
+          isRecording={isRecording}
+          setIsRecording={setIsRecording}
+          sound={sound}
+          setSound={setSound}
+        />
       </View>
 
       {/* Confirmation modal for upload name */}
